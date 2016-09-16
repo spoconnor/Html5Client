@@ -15,9 +15,6 @@ function preload() {
     }
 };
 
-var ProtoBuf = dcodeIO.ProtoBuf;
-var builder = ProtoBuf.loadProtoFile("src/CommsMessages.proto");
-var CommsMessages = builder.build("CommsMessages");
 var clientId = 0;
 var webServerId = 1000;
 var socket;
@@ -87,20 +84,18 @@ function update() {
         game.camera.x += 4;
     }
 
-        //  Run collision
+    //  Run collision
     //    game.physics.arcade.overlap(bullets, aliens, collisionHandler, null, this);
     //    game.physics.arcade.overlap(enemyBullets, player, enemyHitsPlayer, null, this);
 }
 
 function render() {
-    
     game.debug.cameraInfo(game.camera, 32, 32);
     
     // for (var i = 0; i < aliens.length; i++)
     // {
     //     game.debug.body(aliens.children[i]);
     // }
-
 }
 
 //var socket = new WebSocket("ws://localhost:8000/socket/server/startDaemon.php");
@@ -120,12 +115,25 @@ function render() {
  * @param {ArrayBuffers} buffer2 The second buffer.
  * @return {ArrayBuffers} The new ArrayBuffer created out of the two.
  */
-var _appendBuffer = function(buffer1, buffer2) {
+function appendBuffer(buffer1, buffer2) {
   var tmp = new Uint8Array(buffer1.byteLength + buffer2.byteLength);
   tmp.set(new Uint8Array(buffer1), 0);
   tmp.set(new Uint8Array(buffer2), buffer1.byteLength);
   return tmp;//.buffer;
 };
+
+function ab2str(buf) {
+  return String.fromCharCode.apply(null, new Uint8Array(buf));
+}
+
+function str2ab(str) {
+  var buf = new ArrayBuffer(str.length); // 1 bytes for each char
+  var bufView = new Uint8Array(buf);
+  for (var i=0, strLen=str.length; i<strLen; i++) {
+    bufView[i] = str.charCodeAt(i);
+  }
+  return buf;
+}
 
 function connect() {
     try {
@@ -137,7 +145,8 @@ function connect() {
 
         socket.onopen = function() {
             console.log('Socket Status: '+socket.readyState+' (open)');
-            login(socket);
+            ping(socket);
+            getMap(socket);
         };
 
         socket.onmessage = function(msg) {
@@ -147,16 +156,16 @@ function connect() {
               console.log("Received Blob data from the server");
             } else if (msg.data instanceof ArrayBuffer){
               console.log("Received ArrayBuffer data from the server");
-              var array = new Uint8Array(msg.data);
-              var protoMsgLen = array[0];
-              var data = array.slice(protoMsgLen+1);
-              var message = CommsMessages.Message.decodeDelimited(msg.data);
-              console.log('Received msgtype: '+message.msgtype);
-              if (message.msgtype === 1) {
-                processResponse(message);
-              } else if (message.msgtype === 9) {
-                processMap(message, data);
-              }        
+            //  var array = new Uint8Array(msg.data);
+            //  var protoMsgLen = array[0];
+            //  var data = array.slice(protoMsgLen+1);
+            //  var message = CommsMessages.Message.decodeDelimited(msg.data);
+            //  console.log('Received msgtype: '+message.msgtype);
+            //  if (message.msgtype === 1) {
+            //    processResponse(message);
+            //  } else if (message.msgtype === 9) {
+            //    processMap(message, data);
+            //  }        
             }
         };
 
@@ -170,22 +179,23 @@ function connect() {
 
 function sendMessage(message) {
   console.log("Preparing to send message");
-  var msg = new Uint8Array(message.encodeDelimited().toArrayBuffer());
-  console.log("Sending:"+msg[0]+","+msg[1]+","+msg[2]);
+  var msgJson = JSON.stringify(message);
+  var msgBin = str2ab(msgJson);
+  var msgLen = msgBin.byteLength;
+  var lenBuf = new Uint8Array(2);
+  lenBuf[0] = msgLen / 256;
+  lenBuf[1] = msgLen % 256;
+  var msg = appendBuffer(lenBuf, msgBin);
+  console.log("Sending...");
   socket.send(msg);
   console.log("Message Sent");
 }  
 
-function login(socket) {
+function ping(socket) {
     try {
-        console.log('Login...');
-        var msg = new CommsMessages.Message({"msgtype":5, "from":clientId, "dest":webServerId });
-        msg.login = new CommsMessages.Login({"username":"sean", "password":"pass"});
-
+        console.log('Ping...');
+        var msg = {"PingMessage":{"Message":"Ping"}}
         sendMessage(msg);
-        //var data = msg.encodeDelimited().toArrayBuffer();
-        //socket.send(data);
-
     } catch(exception) {
        console.log('Error:' + exception);
     }
@@ -245,11 +255,8 @@ function processMap(msg, data) {
 function say(text) {
     try {
         console.log('Say...');
-        var msg = new CommsMessages.Message({"msgtype":6, "from":clientId, "dest":webServerId });
-        msg.say = new CommsMessages.Say({"text":text});
+        var msg = {"SayMessage":{"Text":text}}
         sendMessage(msg);
-        //var data = msg.encodeDelimited().toArrayBuffer();
-        //socket.send(data);
     } catch(exception) {
        console.log('Error:' + exception);
     }
@@ -258,11 +265,8 @@ function say(text) {
 function getMap(x,y) {
     try {
         console.log('GetMap...');
-        var msg = new CommsMessages.Message({"msgtype":7, "from":clientId, "dest":webServerId });
-        msg.mapRequest = new CommsMessages.MapRequest({"x":x, "y":y});
+        var msg = {"MapRequestMessage":{"Coords":{"x":x,"z":y}}}
         sendMessage(msg);
-        //var data = msg.encodeDelimited().toArrayBuffer();
-        //socket.send(data);
     } catch(exception) {
        console.log('Error:' + exception);
     }
