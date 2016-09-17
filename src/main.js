@@ -156,6 +156,15 @@ function connect() {
               console.log("Received Blob data from the server");
             } else if (msg.data instanceof ArrayBuffer){
               console.log("Received ArrayBuffer data from the server");
+
+              var data = msg.data;
+              var dv = new DataView(data);
+              var msgLen = dv.getUint16(0);
+              //var height = dv.getUint16(2);
+              //var format = getPixelFormat(dv);
+              //var len = dv.getUint32(20);
+
+
             //  var array = new Uint8Array(msg.data);
             //  var protoMsgLen = array[0];
             //  var data = array.slice(protoMsgLen+1);
@@ -186,8 +195,12 @@ function sendMessage(message) {
   lenBuf[0] = msgLen / 256;
   lenBuf[1] = msgLen % 256;
   var msg = appendBuffer(lenBuf, msgBin);
+  var dataLen = new Uint8Array(2);
+  dataLen[0] = 0;
+  dataLen[1] = 0;
+  var packet = appendBuffer(msg, dataLen);
   console.log("Sending...");
-  socket.send(msg);
+  socket.send(packet.buffer);
   console.log("Message Sent");
 }  
 
