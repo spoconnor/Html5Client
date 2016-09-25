@@ -137,7 +137,7 @@ function str2ab(str) {
 
 function connect() {
     try {
-        var host = "ws://localhost:8081/WebSocket";// /socket/server/startDaemon.php";
+        var host = "ws://localhost:8083/WebSocket";// /socket/server/startDaemon.php";
         socket = new WebSocket(host);
         socket.binaryType = "arraybuffer"; // or assign to "blob"
 
