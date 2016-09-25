@@ -195,9 +195,11 @@ function sendMessage(message) {
   lenBuf[0] = msgLen / 256;
   lenBuf[1] = msgLen % 256;
   var msg = appendBuffer(lenBuf, msgBin);
-  var dataLen = new Uint8Array(2);
+  var dataLen = new Uint8Array(4);
   dataLen[0] = 0;
   dataLen[1] = 0;
+  dataLen[2] = 0;
+  dataLen[3] = 0;
   var packet = appendBuffer(msg, dataLen);
   console.log("Sending...");
   socket.send(packet.buffer);
