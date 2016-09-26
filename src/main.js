@@ -56,7 +56,7 @@ function start() {
     // TODO - wait for open state, then send these
     setTimeout(function () {
       say("Hello World!");
-      getMap(1,1);
+      getMap(100,100);
     }, 20000);
     
     button.visible = false;
