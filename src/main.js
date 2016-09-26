@@ -135,6 +135,11 @@ function str2ab(str) {
   return buf;
 }
 
+function UserException(message) {
+   this.message = message;
+   this.name = "UserException";
+}
+
 function connect() {
     try {
         var host = "ws://localhost:8083/WebSocket";// /socket/server/startDaemon.php";
@@ -146,7 +151,6 @@ function connect() {
         socket.onopen = function() {
             console.log('Socket Status: '+socket.readyState+' (open)');
             ping(socket);
-            getMap(socket);
         };
 
         socket.onmessage = function(msg) {
@@ -160,21 +164,25 @@ function connect() {
               var data = msg.data;
               var dv = new DataView(data);
               var msgLen = dv.getUint16(0);
-              //var height = dv.getUint16(2);
-              //var format = getPixelFormat(dv);
-              //var len = dv.getUint32(20);
-
-
-            //  var array = new Uint8Array(msg.data);
-            //  var protoMsgLen = array[0];
-            //  var data = array.slice(protoMsgLen+1);
-            //  var message = CommsMessages.Message.decodeDelimited(msg.data);
-            //  console.log('Received msgtype: '+message.msgtype);
-            //  if (message.msgtype === 1) {
-            //    processResponse(message);
-            //  } else if (message.msgtype === 9) {
-            //    processMap(message, data);
-            //  }        
+              console.log("MsgLen=" + msgLen);
+              if (msgLen > 1024)
+                throw new UserException("MsgLen exceeds max");
+              var msgArray = data.slice(2,2+msgLen);
+              var dataLen = dv.getUint32(2+msgLen);
+              console.log("DataLen=" + dataLen);
+              if (dataLen > 1048576)
+                throw new UserException("DataLen exceeds max");
+              var binData = data.slice(2+msgLen+4,2+msgLen+4+dataLen);
+            
+              var msgStr = ab2str(msgArray);
+              console.log("json message=" + msgStr);
+              var message = JSON.parse(msgStr);
+              
+              if (message.Map != null)
+              {
+                binDataDv = new DataView(binData);
+                processMap(message, binDataDv);
+              }
             }
         };
 
@@ -209,7 +217,7 @@ function sendMessage(message) {
 function ping(socket) {
     try {
         console.log('Ping...');
-        var msg = {"PingMessage":{"Message":"Ping"}}
+        var msg = {"Ping":{"Message":"Ping"}}
         sendMessage(msg);
     } catch(exception) {
        console.log('Error:' + exception);
@@ -254,10 +262,10 @@ function processMap(msg, data) {
     var idx=0;
     for (var x=0; x<10; x++){
         for (var y=0; y<10; y++){
-            var colMin=data[idx++];
-            var colMax=data[idx++];
+            var colMin=data.getInt8(idx++);
+            var colMax=data.getInt8(idx++);
             for (var z=colMin; z<=colMax; z++){
-                var spr=sprites[data[idx++]];
+                var spr=sprites[data.getInt8(idx++)];
                 var block = game.add.sprite(400+(x-y)*32,256+(x+y)*16-z*21, 'iso-outside');
                 //console.log('frameName: ' + x + ',' + y + '=' + mapsprites[y*10+x] + '=>' + sprites[mapsprites[y*10+x]])
                 block.frameName = spr;
@@ -270,7 +278,7 @@ function processMap(msg, data) {
 function say(text) {
     try {
         console.log('Say...');
-        var msg = {"SayMessage":{"Text":text}}
+        var msg = {"Say":{"Text":text}}
         sendMessage(msg);
     } catch(exception) {
        console.log('Error:' + exception);
@@ -280,7 +288,7 @@ function say(text) {
 function getMap(x,y) {
     try {
         console.log('GetMap...');
-        var msg = {"MapRequestMessage":{"Coords":{"x":x,"z":y}}}
+        var msg = {"MapRequest":{"Coords":{"X":x,"Z":y}}}
         sendMessage(msg);
     } catch(exception) {
        console.log('Error:' + exception);
