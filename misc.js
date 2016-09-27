@@ -1,4 +1,4 @@
-﻿
+
 /**
  * Creates a new Uint8Array based on two different ArrayBuffers
  *

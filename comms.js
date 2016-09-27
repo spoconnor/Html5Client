@@ -1,4 +1,4 @@
-﻿
+
 
 //var socket = new WebSocket("ws://localhost:8000/socket/server/startDaemon.php");
 //
@@ -64,7 +64,6 @@ function connect() {
 }
 
 function sendMessage(message) {
-    console.log("Preparing to send message");
     var msgJson = JSON.stringify(message);
     var msgBin = str2ab(msgJson);
     var msgLen = msgBin.byteLength;
@@ -78,18 +77,17 @@ function sendMessage(message) {
     dataLen[2] = 0;
     dataLen[3] = 0;
     var packet = appendBuffer(msg, dataLen);
-    console.log("Sending...");
     socket.send(packet.buffer);
     console.log("Message Sent");
 }
 
 function ping(socket) {
     try {
-        console.log('Ping...');
+        console.log('Sending Ping...');
         var msg = { "Ping": { "Message": "Ping" } }
         sendMessage(msg);
     } catch (exception) {
-        console.log('Error:' + exception);
+        console.log('Ping Error:' + exception);
     }
 }
 
@@ -146,20 +144,20 @@ function processMap(msg, data) {
 
 function say(text) {
     try {
-        console.log('Say...');
+        console.log('Sending Say...');
         var msg = { "Say": { "Text": text } }
         sendMessage(msg);
     } catch (exception) {
-        console.log('Error:' + exception);
+        console.log('Say Error:' + exception);
     }
 }
 
 function getMap(x, y) {
     try {
-        console.log('GetMap...');
+        console.log('Sending GetMap...');
         var msg = { "MapRequest": { "Coords": { "X": x, "Z": y } } }
         sendMessage(msg);
     } catch (exception) {
-        console.log('Error:' + exception);
+        console.log('GetMap Error:' + exception);
     }
 }

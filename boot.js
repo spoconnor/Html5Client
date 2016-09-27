@@ -1,4 +1,4 @@
-﻿// Boot will take care of initializing a few settings,
+// Boot will take care of initializing a few settings,
 
 // declare the object that will hold all game states
 var GameStates = {

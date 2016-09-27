@@ -1,4 +1,4 @@
-﻿GameStates.Game = function (game) {
+GameStates.Game = function (game) {
 
 };
 
@@ -12,10 +12,6 @@ GameStates.Game.prototype = {
     //    this.add.tween(logo.scale).to({ x: 1, y: 1 }, 2000, Phaser.Easing.Bounce.Out, true);
     //},
 
-    //update: function () { },
-
-    //render: function () { },
-
     create: function() {
 
         //  Modify the world and camera bounds
@@ -27,25 +23,17 @@ GameStates.Game.prototype = {
         cursors = this.input.keyboard.createCursorKeys();
         fireButton = this.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
         
-        //	Just to kick things off
-        //button = this.add.button(200, 100, 'button', start, this, 2, 1, 0);
+        var mapDataWorker = new Worker("dataworker.js");
 
-        //	Progress report
-        //text = this.add.text(32, 128, 'Click to login', { fill: '#ffffff' });
-    //},
-    //start: function () {
-        //  We load a TexturePacker JSON file and image and show you how to make several unique sprites from the same file
-        //this.load.image('picture1', 'assets/pics/mighty_no_09_cover_art_by_robduenas.jpg');
-        
-        connect();
-
-        // TODO - wait for open state, then send these
-        setTimeout(function () {
-            say("Hello World!");
-            getMap(100,100);
-        }, 20000);
-        
-        //button.visible = false;
+        // receive messages from web worker
+        mapDataWorker.onmessage = function(e) {
+	  alert(e.data);
+        };
+        mapDataWorker.onerror = function(e) {
+  	  alert("Error in file: "+e.filename+"nline: "+e.lineno+"nDescription: "+e.message);
+        };
+        // send message to web worker
+        mapDataWorker.postMessage("connect");
     },
 
     update: function () {

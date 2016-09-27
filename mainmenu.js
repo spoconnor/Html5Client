@@ -1,4 +1,4 @@
-﻿GameStates.MainMenu = function (game) {
+GameStates.MainMenu = function (game) {
 
 };
 
