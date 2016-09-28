@@ -48,10 +48,7 @@ function connect() {
                 console.log("json message=" + msgStr);
                 var message = JSON.parse(msgStr);
 
-                if (message.Map != null) {
-                    binDataDv = new DataView(binData);
-                    processMap(message, binDataDv);
-                }
+                processMessage(message, binData);
             }
         };
 
@@ -122,23 +119,6 @@ function processResponse(msg) {
     if (msg.response.code === 1) {
         clientId = msg.dest;
         console.log('Logged in, clientId = ' + clientId);
-    }
-}
-function processMap(msg, data) {
-    console.log('Map message recevied');
-    var idx = 0;
-    for (var x = 0; x < 10; x++) {
-        for (var y = 0; y < 10; y++) {
-            var colMin = data.getInt8(idx++);
-            var colMax = data.getInt8(idx++);
-            for (var z = colMin; z <= colMax; z++) {
-                var spr = sprites[data.getInt8(idx++)];
-                var block = game.add.sprite(400 + (x - y) * 32, 256 + (x + y) * 16 - z * 21, 'iso-outside');
-                //console.log('frameName: ' + x + ',' + y + '=' + mapsprites[y*10+x] + '=>' + sprites[mapsprites[y*10+x]])
-                block.frameName = spr;
-                block.anchor.setTo(0.5, 0.5);
-            }
-        }
     }
 }
 
