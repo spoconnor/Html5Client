@@ -6,7 +6,7 @@ var theGame;
 
 
 function mapToScreenCoords(map) {
-    var x = 400 + (map.x - map.z) * 32;
+    var x = ((map.x - map.z) * 32);// + 400;
     var y = 256 + (map.x + map.z) * 16 - map.y * 21;
     return { x: x, y: y };
 };
@@ -36,6 +36,7 @@ GameStates.Game.prototype = {
         var z = e.data[3];
         var spr = e.data[4];
         var scrLoc = mapToScreenCoords({ x: x, y: y, z: z });
+        //console.log('Add aprite at: ' + x + "," + y + "," + z + "=>" + scrLoc.x + ',' + scrLoc.y);
         var block = theGame.add.sprite(scrLoc.x, scrLoc.y, 'iso-outside');
         //console.log('frameName: ' + x + ',' + z + '=' + mapsprites[z*10+x] + '=>' + sprites[mapsprites[z*10+x]])
         block.frameName = spr;
@@ -48,15 +49,17 @@ GameStates.Game.prototype = {
 
         theGame = this.game;
         //  Modify the world and camera bounds
-        // this.world.setBounds(-2000, -2000, 4000, 4000);
+        //this.world.setBounds(-40000, -40000, 40000, 40000);
         // this.world.resize(2000, 2000);
-        this.lookAt = { x: 1000, y: 100, z: 1000 };
+        this.lookAt = { x: 1000, y: 0, z: 1000 };
 
-        minWorld = mapToScreenCoords({ x: this.lookAt.x - 100, y:0, z: this.lookAt.z - 100 });
-        maxWorld = mapToScreenCoords({ x: this.lookAt.x + 100, y:0, z: this.lookAt.z + 100 });
-        this.world.setBounds(minWorld.x, minWorld.y, maxWorld.x, maxWorld.y);
+        minWorld = mapToScreenCoords({ x: this.lookAt.x - 1000, y:0, z: this.lookAt.z });
+        maxWorld = mapToScreenCoords({ x: this.lookAt.x + 1000, y:0, z: this.lookAt.z });
+        this.game.world.setBounds(minWorld.x, minWorld.y, maxWorld.x-minWorld.x, maxWorld.y-minWorld.y);
 
-        this.camera = mapToScreenCoords(this.lookAt);
+        var cam = mapToScreenCoords(this.lookAt);
+        this.game.camera.x = cam.x;
+        this.game.camera.y = cam.y;
         this.currentChunk = mapToChunkCoords(this.lookAt);
 
         this.stage.backgroundColor = '#404040';
@@ -109,7 +112,10 @@ GameStates.Game.prototype = {
 
         if (moved)
         {
-          this.camera.x = mapToScreenCoords(this.lookAt);
+          var cam = mapToScreenCoords(this.lookAt);
+          this.game.camera.x = cam.x; // TODO - combine with above?
+          this.game.camera.y = cam.y;
+          //console.log('move camera to: ' + cam.x + ',' + cam.y);
           chunk = mapToChunkCoords(this.lookAt);
           if (chunk.x != this.currentChunk.x || chunk.z != this.currentChunk.z)
           {
@@ -120,7 +126,7 @@ GameStates.Game.prototype = {
     },
 
     render: function () {
-        //this.debug.cameraInfo(this.camera, 32, 32);
+        this.game.debug.cameraInfo(this.game.camera, 32, 32);
         
         // for (var i = 0; i < aliens.length; i++)
         // {
