@@ -90,29 +90,30 @@ function ping(socket) {
 
 var sprites = [
   "null", // 0
-  "grass_slope_n.png",  // 1
-  "grass_slope_ne.png", // 2
-  "grass_slope_nw.png", // 3
-  "grass_slope_e.png",  // 4
-  "grass_block.png",    // 5
-  "grass_slope_w.png",  // 6
-  "grass_slope_se.png", // 7
-  "grass_slope_sw.png", // 8
-  "grass_slope_s.png",  // 9
-  "grass_slope_wse.png",// 10
-  "grass_slope_nws.png",// 11
-  "grass_slope_wne.png",// 12
-  "grass_slope_nes.png",// 13
-  "rock_outcrop_.png",  // 14
-  "rock_slope_n.png",   // 15
-  "rock_slope_nw.png",  // 16
-  "rock_slope_e.png",   // 17
-  "rock_block_1.png",   // 18
-  "rock_block_2.png",   // 19
-  "rock_slope_w.png",   // 20
-  "rock_slope_se.png",  // 21
-  "rock_slope_sw.png",  // 22
-  "rock_slope_s.png"   // 23
+  "water", // 1
+  "grass_block.png", // 2
+  "grass_slope_n.png",
+  "grass_slope_ne.png",
+  "grass_slope_nw.png",
+  "grass_slope_e.png", 
+  "grass_slope_w.png",
+  "grass_slope_se.png",
+  "grass_slope_sw.png",
+  "grass_slope_s.png",
+  "grass_slope_wse.png",
+  "grass_slope_nws.png",
+  "grass_slope_wne.png",
+  "grass_slope_nes.png",
+  "rock_outcrop_.png",
+  "rock_slope_n.png",
+  "rock_slope_nw.png",
+  "rock_slope_e.png",
+  "rock_block_1.png",
+  "rock_block_2.png",
+  "rock_slope_w.png",
+  "rock_slope_se.png",
+  "rock_slope_sw.png",
+  "rock_slope_s.png"
 ];
 
 function processResponse(msg) {

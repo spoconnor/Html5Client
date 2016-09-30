@@ -2,6 +2,18 @@ GameStates.Game = function (game) {
 
 };
 
+var theGame;
+
+
+function mapToScreenCoords(map) {
+    var x = 400 + (map.x - map.z) * 32;
+    var y = 256 + (map.x + map.z) * 16 - map.y * 21;
+    return { x: x, y: y };
+};
+function mapToChunkCoords(map) {
+    return { x: (map.x / 32 >> 0), z: (map.z / 32 >> 0) };  // The '>> 0' does a quick round down
+};
+
 GameStates.Game.prototype = {
 
     //create: function () {
@@ -13,15 +25,18 @@ GameStates.Game.prototype = {
     //},
 
     mapDataWorker: null,
+    lookAt: { x: 0, y: 0, z: 0 },
+    currentChunk: { x: 0, z: 0},
 
     processMapData: function(e) {
       if (e.data[0] = '+')
       {
         var x=e.data[1];
         var y=e.data[2];
-        var z=e.data[3];
-        var spr=e.data[4];
-        var block = this.game.add.sprite(400 + (x - z) * 32, 256 + (x + z) * 16 - y * 21, 'iso-outside');
+        var z = e.data[3];
+        var spr = e.data[4];
+        var scrLoc = mapToScreenCoords({ x: x, y: y, z: z });
+        var block = theGame.add.sprite(scrLoc.x, scrLoc.y, 'iso-outside');
         //console.log('frameName: ' + x + ',' + z + '=' + mapsprites[z*10+x] + '=>' + sprites[mapsprites[z*10+x]])
         block.frameName = spr;
         block.anchor.setTo(0.5, 0.5);
@@ -31,10 +46,19 @@ GameStates.Game.prototype = {
 
     create: function() {
 
+        theGame = this.game;
         //  Modify the world and camera bounds
         // this.world.setBounds(-2000, -2000, 4000, 4000);
-        this.world.resize(2000, 2000);
-        
+        // this.world.resize(2000, 2000);
+        this.lookAt = { x: 1000, y: 100, z: 1000 };
+
+        minWorld = mapToScreenCoords({ x: this.lookAt.x - 100, y:0, z: this.lookAt.z - 100 });
+        maxWorld = mapToScreenCoords({ x: this.lookAt.x + 100, y:0, z: this.lookAt.z + 100 });
+        this.world.setBounds(minWorld.x, minWorld.y, maxWorld.x, maxWorld.y);
+
+        this.camera = mapToScreenCoords(this.lookAt);
+        this.currentChunk = mapToChunkCoords(this.lookAt);
+
         this.stage.backgroundColor = '#404040';
 
         cursors = this.input.keyboard.createCursorKeys();
@@ -50,6 +74,7 @@ GameStates.Game.prototype = {
         // send message to web worker
         this.mapDataWorker.postMessage(['connect']);
 
+        //this.mapDataWorker.postMessage(['at',this.currentChunk.x,this.currentChunk.z]);
         //setTimeout(function() {
         //  this.mapDataWorker.postMessage(['at',100,100]);
         //}, 10000);
@@ -62,34 +87,36 @@ GameStates.Game.prototype = {
         var moved = false;
         if (cursors.up.isDown)
         {
-            this.camera.y -= 4;
+            this.lookAt.z -= 1;
             moved = true;
         }
         else if (cursors.down.isDown)
         {
-            this.camera.y += 4;
+            this.lookAt.z += 1;
             moved = true;
         }
 
         if (cursors.left.isDown)
         {
-            this.camera.x -= 4;
+            this.lookAt.x -= 1;
             moved = true;
         }
         else if (cursors.right.isDown)
         {
-            this.camera.x += 4;
+            this.lookAt.x += 1;
             moved = true;
         }
 
         if (moved)
         {
-          this.mapDataWorker.postMessage(['at',100,100]);
+          this.camera.x = mapToScreenCoords(this.lookAt);
+          chunk = mapToChunkCoords(this.lookAt);
+          if (chunk.x != this.currentChunk.x || chunk.z != this.currentChunk.z)
+          {
+              this.currentChunk = chunk;
+              this.mapDataWorker.postMessage(['at',this.currentChunk.x,this.currentChunk.z]);
+          }
         }
-
-        //  Run collision
-        //    this.physics.arcade.overlap(bullets, aliens, collisionHandler, null, this);
-        //    this.physics.arcade.overlap(enemyBullets, player, enemyHitsPlayer, null, this);
     },
 
     render: function () {

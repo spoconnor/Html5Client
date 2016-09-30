@@ -30,16 +30,20 @@ function processMessage(message, binData)
 function processMap(msg, data) {
     console.log('Map message recevied');
     var idx = 0;
-    for (var x = 0; x < 10; x++) {
-        for (var z = 0; z < 10; z++) {
-            var colMin = data.getInt8(idx++);
-            var colMax = data.getInt8(idx++);
-            for (var y = colMin; y <= colMax; y++) {
+    var minX = msg.Map.MinPosition.X;
+    var maxX = msg.Map.MaxPosition.X;
+    var minY = msg.Map.MinPosition.Y;
+    var maxY = msg.Map.MaxPosition.Y;
+    var minZ = msg.Map.MinPosition.Z;
+    var maxZ = msg.Map.MaxPosition.Z;
+    for (var x = 0; x < (maxX - minX); x++) {
+        for (var z = 0; z < (maxZ - minZ); z++) {
+            for (var y = 0; y < (maxY - minY); y++) {
                 var s = data.getInt8(idx++);
                 if (s != 0)
                 {
                   var spr = sprites[s];
-                  self.postMessage(['+',x,y,z,spr]);
+                  self.postMessage(['+',minX+x,y,minZ+z,spr]);
                 }
             }
         }
