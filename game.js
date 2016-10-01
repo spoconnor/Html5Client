@@ -3,12 +3,27 @@ GameStates.Game = function (game) {
 };
 
 var theGame;
-
+var furtherestBlock = {};
+var closestBlock = {};
+var boundBlocks = {};
 
 function mapToScreenCoords(map) {
     var x = ((map.x - map.z) * 32);// + 400;
-    var y = 256 + (map.x + map.z) * 16 - map.y * 21;
-    return { x: x, y: y };
+    var y = 256 + (map.x + map.z) * 16 - (map.y * 21);
+    // z calc
+    var x1 = map.x - furtherestBlock.x;
+    var y1 = map.y - furtherestBlock.y;    
+    var z1 = map.z - furtherestBlock.z;
+    var z = z1 + (y1 * boundBlocks.z * boundBlocks.x) + x1;
+    return { x: x, y: y, z: z };
+};
+function screenToMapCoords(scr, y) {
+    var xyDiff = scr.x/32;
+    var xyAdd  = (scr.y-256+(21*y))/16;
+    var y = (xyAdd - xyDiff) / 2;
+    var x = (xyAdd + xyDiff) / 2;
+    var z = (y - 256 + 21 * y) / 16 - x;
+    return { x: x, y: y, z: z };
 };
 function mapToChunkCoords(map) {
     return { x: (map.x / 32 >> 0), z: (map.z / 32 >> 0) };  // The '>> 0' does a quick round down
@@ -39,6 +54,7 @@ GameStates.Game.prototype = {
         //console.log('Add aprite at: ' + x + "," + y + "," + z + "=>" + scrLoc.x + ',' + scrLoc.y);
         var block = theGame.add.sprite(scrLoc.x, scrLoc.y, 'iso-outside');
         //console.log('frameName: ' + x + ',' + z + '=' + mapsprites[z*10+x] + '=>' + sprites[mapsprites[z*10+x]])
+        block.z = scrLoc.z;
         block.frameName = spr;
         block.anchor.setTo(0.5, 0.5);
       }
@@ -56,6 +72,12 @@ GameStates.Game.prototype = {
         minWorld = mapToScreenCoords({ x: this.lookAt.x - 1000, y:0, z: this.lookAt.z });
         maxWorld = mapToScreenCoords({ x: this.lookAt.x + 1000, y:0, z: this.lookAt.z });
         this.game.world.setBounds(minWorld.x, minWorld.y, maxWorld.x-minWorld.x, maxWorld.y-minWorld.y);
+        furtherestBlock = screenToMapCoords({x:minWorld.x, y:minWorld.y}, 0);
+        closestBlock = screenToMapCoords({x:maxWorld.x, y:maxWorld.y}, 128);
+        boundBlocks = {
+		x: closestBlock.x - furtherestBlock.x,
+		y: closestBlock.y - furtherestBlock.y,
+		z: closestBlock.z - furtherestBlock.z};
 
         var cam = mapToScreenCoords(this.lookAt);
         this.game.camera.x = cam.x;
