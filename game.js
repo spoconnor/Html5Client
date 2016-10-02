@@ -11,10 +11,11 @@ function mapToScreenCoords(map) {
     var x = ((map.x - map.z) * 32);// + 400;
     var y = 256 + (map.x + map.z) * 16 - (map.y * 21);
     // z calc
-    var x1 = map.x - furtherestBlock.x;
-    var y1 = map.y - furtherestBlock.y;    
-    var z1 = map.z - furtherestBlock.z;
-    var z = z1 + (y1 * boundBlocks.z * boundBlocks.x) + x1;
+    //var x1 = map.x - furtherestBlock.x;
+    //var y1 = map.y - furtherestBlock.y;    
+    //var z1 = map.z - furtherestBlock.z;
+    //var z = z1 + (y1 * boundBlocks.z * boundBlocks.x) + x1;
+    var z = (map.x + map.z) * 256 + map.y;
     return { x: x, y: y, z: z };
 };
 function screenToMapCoords(scr, y) {
@@ -50,6 +51,8 @@ GameStates.Game.prototype = {
         var y=e.data[2];
         var z = e.data[3];
         var spr = e.data[4];
+if (y < 10)
+{
         var scrLoc = mapToScreenCoords({ x: x, y: y, z: z });
         //console.log('Add aprite at: ' + x + "," + y + "," + z + "=>" + scrLoc.x + ',' + scrLoc.y);
         var block = theGame.add.sprite(scrLoc.x, scrLoc.y, 'iso-outside');
@@ -57,6 +60,7 @@ GameStates.Game.prototype = {
         block.z = scrLoc.z;
         block.frameName = spr;
         block.anchor.setTo(0.5, 0.5);
+}
       }
       //alert(e.data);
     },
