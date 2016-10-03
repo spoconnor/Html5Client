@@ -24,6 +24,10 @@ GameStates.Boot.prototype = {
     preload: function () {
         // load assets to be used later in the preloader e.g. for loading screen / splashscreen
         this.load.image('preloaderBar', 'assets/preloader-bar.png');
+
+        game.time.advancedTiming = true;
+
+        game.plugins.add(new Phaser.Plugin.Isometric(game));
     },
     create: function () {
         // setup game environment

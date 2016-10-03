@@ -6,6 +6,7 @@ var theGame;
 var furtherestBlock = {};
 var closestBlock = {};
 var boundBlocks = {};
+var isoGroup;
 
 function mapToScreenCoords(map) {
     var x = ((map.x - map.z) * 32);// + 400;
@@ -53,13 +54,16 @@ GameStates.Game.prototype = {
         var spr = e.data[4];
 if (y < 10)
 {
-        var scrLoc = mapToScreenCoords({ x: x, y: y, z: z });
+        //var scrLoc = mapToScreenCoords({ x: x, y: y, z: z });
         //console.log('Add aprite at: ' + x + "," + y + "," + z + "=>" + scrLoc.x + ',' + scrLoc.y);
-        var block = theGame.add.sprite(scrLoc.x, scrLoc.y, 'iso-outside');
+        //var block = theGame.add.sprite(scrLoc.x, scrLoc.y, 'iso-outside');
+        var block = theGame.add.isoSprite(x, z, y, 'iso-outside', 0, isoGroup);
         //console.log('frameName: ' + x + ',' + z + '=' + mapsprites[z*10+x] + '=>' + sprites[mapsprites[z*10+x]])
-        block.z = scrLoc.z;
-        block.frameName = spr;
+        block.anchor.set(0.5);
+        //block.z = scrLoc.z;
+        //block.frameName = spr;
         block.anchor.setTo(0.5, 0.5);
+        block.body = null;
 }
       }
       //alert(e.data);
@@ -68,6 +72,7 @@ if (y < 10)
     create: function() {
 
         theGame = this.game;
+        isoGroup = this.game.add.group();
         //  Modify the world and camera bounds
         //this.world.setBounds(-40000, -40000, 40000, 40000);
         // this.world.resize(2000, 2000);
