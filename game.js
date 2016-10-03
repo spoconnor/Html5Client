@@ -81,6 +81,9 @@ if (y < 10)
         minWorld = mapToScreenCoords({ x: this.lookAt.x - 1000, y:0, z: this.lookAt.z });
         maxWorld = mapToScreenCoords({ x: this.lookAt.x + 1000, y:0, z: this.lookAt.z });
         this.game.world.setBounds(minWorld.x, minWorld.y, maxWorld.x-minWorld.x, maxWorld.y-minWorld.y);
+        this.game.startSystem(Phaser.Plugin.Isometric.ISOARCADE);
+        this.game.iso.anchor.setTo(0.5,0);
+
         furtherestBlock = screenToMapCoords({x:minWorld.x, y:minWorld.y}, 0);
         closestBlock = screenToMapCoords({x:maxWorld.x, y:maxWorld.y}, 128);
         boundBlocks = {
