@@ -110,7 +110,8 @@ if (y < 10)
   	  alert("Error in file: "+e.filename+"nline: "+e.lineno+"nDescription: "+e.message);
         };
         // send message to web worker
-        this.mapDataWorker.postMessage(['connect']);
+        //this.mapDataWorker.postMessage(['connect']); // TODO - faked out
+        this.mapDataWorker.postMessage(['fakeconnect']);
 
         //this.mapDataWorker.postMessage(['at',this.currentChunk.x,this.currentChunk.z]);
         //setTimeout(function() {
