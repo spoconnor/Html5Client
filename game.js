@@ -3,11 +3,20 @@ GameStates.Game = function (game) {
 };
 
 var theGame;
+var isoProjector;
 var furtherestBlock = {};
 var closestBlock = {};
-var boundBlocks = {};
 var isoGroup;
+var blockHeight = 21;
+var blockWidth = 32;
 
+function coordMultBlockSize(x,y,z) {
+  return { x:(x * this.blockWidth), y:(y * this.blockHeight), z:(z * this.blockWidth) };
+}
+function blockCoordToIsoCoord(coord)
+{
+    return new Phaser.Plugin.Isometric.Point3(coord.x*this.blockWidth, coord.z*this.blockWidth, coord.y*this.blockHeight);
+}
 function mapToScreenCoords(map) {
     var x = ((map.x - map.z) * 32);// + 400;
     var y = 256 + (map.x + map.z) * 16 - (map.y * 21);
@@ -15,7 +24,6 @@ function mapToScreenCoords(map) {
     //var x1 = map.x - furtherestBlock.x;
     //var y1 = map.y - furtherestBlock.y;    
     //var z1 = map.z - furtherestBlock.z;
-    //var z = z1 + (y1 * boundBlocks.z * boundBlocks.x) + x1;
     var z = (map.x + map.z) * 256 + map.y;
     return { x: x, y: y, z: z };
 };
@@ -54,13 +62,9 @@ GameStates.Game.prototype = {
         var spr = e.data[4];
 if (y < 10)
 {
-        //var scrLoc = mapToScreenCoords({ x: x, y: y, z: z });
-        //console.log('Add aprite at: ' + x + "," + y + "," + z + "=>" + scrLoc.x + ',' + scrLoc.y);
-        //var block = theGame.add.sprite(scrLoc.x, scrLoc.y, 'iso-outside');
-        var block = theGame.add.isoSprite(x, z, y, 'iso-outside', 0, isoGroup);
-        //console.log('frameName: ' + x + ',' + z + '=' + mapsprites[z*10+x] + '=>' + sprites[mapsprites[z*10+x]])
+        var scrLoc = coordMultBlockSize(x,y,z);
+        var block = theGame.add.isoSprite(scrLoc.x, scrLoc.z, scrLoc.y, 'iso-outside', 0, isoGroup);
         block.anchor.set(0.5);
-        //block.z = scrLoc.z;
         //block.frameName = spr;
         block.anchor.setTo(0.5, 0.5);
         block.body = null;
@@ -70,30 +74,27 @@ if (y < 10)
     },
 
     create: function() {
-
         theGame = this.game;
         isoGroup = this.game.add.group();
+
         //  Modify the world and camera bounds
-        //this.world.setBounds(-40000, -40000, 40000, 40000);
-        // this.world.resize(2000, 2000);
-        this.lookAt = { x: 1000, y: 0, z: 1000 };
+        this.isoProjector = new Phaser.Plugin.Isometric.Projector(this.game, null);
+        this.cursor = {x:100, y:0, z:100};
+        this.lookAt = blockCoordToIsoCoord(this.cursor);
+        this.scrLookAt = this.isoProjector.project(this.lookAt);
 
-        minWorld = mapToScreenCoords({ x: this.lookAt.x - 1000, y:0, z: this.lookAt.z });
-        maxWorld = mapToScreenCoords({ x: this.lookAt.x + 1000, y:0, z: this.lookAt.z });
-        this.game.world.setBounds(minWorld.x, minWorld.y, maxWorld.x-minWorld.x, maxWorld.y-minWorld.y);
-        this.game.startSystem(Phaser.Plugin.Isometric.ISOARCADE);
-        this.game.iso.anchor.setTo(0.5,0);
+        boundBottom = this.isoProjector.project(blockCoordToIsoCoord({x:this.cursor.x - 100, y:0, z:this.cursor.z - 100}));
+        boundTop = this.isoProjector.project(blockCoordToIsoCoord({x:this.cursor.x + 100, y:0, z:this.cursor.z + 100}));
+        boundLeft = this.isoProjector.project(blockCoordToIsoCoord({x:this.cursor.x, y:0, z:this.cursor.z + 100}));
+        boundRight = this.isoProjector.project(blockCoordToIsoCoord({x:this.cursor.x + 100, y:0, z:this.cursor.z}));
 
-        furtherestBlock = screenToMapCoords({x:minWorld.x, y:minWorld.y}, 0);
-        closestBlock = screenToMapCoords({x:maxWorld.x, y:maxWorld.y}, 128);
-        boundBlocks = {
-		x: closestBlock.x - furtherestBlock.x,
-		y: closestBlock.y - furtherestBlock.y,
-		z: closestBlock.z - furtherestBlock.z};
+        this.game.world.setBounds(boundRight.x, boundBottom.y, boundLeft.x - boundRight.x, boundTop.y - boundBottom.y);
 
-        var cam = mapToScreenCoords(this.lookAt);
-        this.game.camera.x = cam.x;
-        this.game.camera.y = cam.y;
+        //this.game.physics.startSystem(Phaser.Plugin.Isometric.ISOARCADE); // Physics system
+        this.game.iso.anchor.setTo(0.5,0.5);
+
+        this.game.camera.x = this.scrLookAt.x;
+        this.game.camera.y = this.scrLookAt.y;
         this.currentChunk = mapToChunkCoords(this.lookAt);
 
         this.stage.backgroundColor = '#404040';
@@ -124,31 +125,33 @@ if (y < 10)
         var moved = false;
         if (cursors.up.isDown)
         {
-            this.lookAt.z -= 1;
+            this.cursor.z -= 1;
             moved = true;
         }
         else if (cursors.down.isDown)
         {
-            this.lookAt.z += 1;
+            this.cursor.z += 1;
             moved = true;
         }
 
         if (cursors.left.isDown)
         {
-            this.lookAt.x -= 1;
+            this.cursor.x -= 1;
             moved = true;
         }
         else if (cursors.right.isDown)
         {
-            this.lookAt.x += 1;
+            this.cursor.x += 1;
             moved = true;
         }
 
         if (moved)
         {
-          var cam = mapToScreenCoords(this.lookAt);
-          this.game.camera.x = cam.x; // TODO - combine with above?
-          this.game.camera.y = cam.y;
+          this.lookAt = blockCoordToIsoCoord(this.cursor);
+          this.scrLookAt = this.isoProjector.project(this.lookAt);
+          this.game.camera.x = this.scrLookAt.x;
+          this.game.camera.y = this.scrLookAt.y;
+
           //console.log('move camera to: ' + cam.x + ',' + cam.y);
           chunk = mapToChunkCoords(this.lookAt);
           if (chunk.x != this.currentChunk.x || chunk.z != this.currentChunk.z)
