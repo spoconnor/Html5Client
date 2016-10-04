@@ -95,7 +95,7 @@ if (y < 10)
 
         this.game.camera.x = this.scrLookAt.x;
         this.game.camera.y = this.scrLookAt.y;
-        this.currentChunk = mapToChunkCoords(this.lookAt);
+        this.currentChunk = mapToChunkCoords(this.cursor);
 
         this.stage.backgroundColor = '#404040';
 
@@ -153,7 +153,7 @@ if (y < 10)
           this.game.camera.y = this.scrLookAt.y;
 
           //console.log('move camera to: ' + cam.x + ',' + cam.y);
-          chunk = mapToChunkCoords(this.lookAt);
+          chunk = mapToChunkCoords(this.cursor);
           if (chunk.x != this.currentChunk.x || chunk.z != this.currentChunk.z)
           {
               this.currentChunk = chunk;
